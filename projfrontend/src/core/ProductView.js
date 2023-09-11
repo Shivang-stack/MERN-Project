@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../styles.css";
 import Base from "./Base";
 import { API } from "../backend";
-
+import { addItemToCart,removeItemFromCart,getCartItemCount } from './helper/CartHelper';
 import {  getProductById } from "../admin/helper/adminapicall";
 
 const ProductView =({match}) =>{
@@ -36,6 +36,31 @@ const ProductView =({match}) =>{
     });
   };
 
+  const initialCount = parseInt(localStorage.getItem(`product_${values.id}`)) || 0;
+  const [count, setCount] = useState(initialCount);
+
+  const updateCountInLocalStorage = (newCount) => {
+    localStorage.setItem(`product_${values.id}`, newCount.toString());
+  };
+
+  
+  const addToCart = () => {
+    const newCount = count + 1;
+    setCount(newCount);
+    updateCountInLocalStorage(newCount);
+    addItemToCart(values, () => {});
+    getCartItemCount();
+  };
+
+  const removeFromCart = () => {
+    if (count > 0) {
+      const newCount = count - 1;
+      setCount(newCount);
+      updateCountInLocalStorage(newCount);
+      removeItemFromCart(values, () => {});
+      getCartItemCount();
+    }
+  };
 
   
   useEffect(() => {
@@ -55,6 +80,21 @@ const ProductView =({match}) =>{
           <img className="border rounded p-1" src={imgUrl} alt={name} width={200} height={200}  />
           <h5 className="pt-3">{description}</h5>
           <h5>Rs {price}</h5>
+          {count > 0 ? (
+          <div>
+            <button className="btn btn-danger" onClick={removeFromCart}>
+              -
+            </button>
+            <span className="count pl-2 pr-2">{count}</span>
+            <button className="btn btn-danger" onClick={addToCart}>
+              +
+            </button>
+          </div>
+        ) : (
+          <button className="btn btn-danger" onClick={addToCart}>
+            Add to Cart
+          </button>
+        )}
         </div>
       </div>
     </Base>
